@@ -17,10 +17,10 @@ package com.example.racetracker.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val md_theme_light_primary = Color(0xFFA23F00)
+val md_theme_light_primary = Color(0xFF673AB7)
 val md_theme_light_onPrimary = Color(0xFFFFFFFF)
-val md_theme_light_primaryContainer = Color(0xFFFFDBCC)
-val md_theme_light_onPrimaryContainer = Color(0xFF351000)
+val md_theme_light_primaryContainer = Color(0xFF3B00A3)
+val md_theme_light_onPrimaryContainer = Color(0xFF390692)
 val md_theme_light_secondary = Color(0xFF76574A)
 val md_theme_light_onSecondary = Color(0xFFFFFFFF)
 val md_theme_light_secondaryContainer = Color(0xFFFFDBCC)

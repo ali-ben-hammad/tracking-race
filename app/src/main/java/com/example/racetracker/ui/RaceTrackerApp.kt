@@ -15,6 +15,7 @@
  */
 package com.example.racetracker.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,11 +31,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,16 +49,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.racetracker.R
 import com.example.racetracker.ui.theme.RaceTrackerTheme
+import com.example.racetracker.ui.theme.md_theme_light_primaryContainer
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RaceTrackerApp() {
     /**
@@ -63,10 +71,10 @@ fun RaceTrackerApp() {
      * Coroutines that implementation detail is stripped out.
      */
     val playerOne = remember {
-        RaceParticipant(name = "Player 1", progressIncrement = 1)
+        RaceParticipant(name = "Player Blue", progressIncrement = 1, color = Color.Blue)
     }
     val playerTwo = remember {
-        RaceParticipant(name = "Player 2", progressIncrement = 2)
+        RaceParticipant(name = "Player Red", progressIncrement = 2 , color =  Color.Red)
     }
     var raceInProgress by remember { mutableStateOf(false) }
 
@@ -79,18 +87,31 @@ fun RaceTrackerApp() {
             raceInProgress = false
         }
     }
-    RaceTrackerScreen(
-        playerOne = playerOne,
-        playerTwo = playerTwo,
-        isRunning = raceInProgress,
-        onRunStateChange = { raceInProgress = it },
-        modifier = Modifier
-            .statusBarsPadding()
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .safeDrawingPadding()
-            .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
-    )
+    Column {
+        // bar containing the title
+        TopAppBar( colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = md_theme_light_primaryContainer,
+            titleContentColor = Color.White,
+        ),
+            title = {
+                Text("Run a race")
+            }
+        )
+
+        RaceTrackerScreen(
+            playerOne = playerOne,
+            playerTwo = playerTwo,
+            isRunning = raceInProgress,
+            onRunStateChange = { raceInProgress = it },
+            modifier = Modifier
+                .statusBarsPadding()
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .safeDrawingPadding()
+                .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+        )
+    }
+
 }
 
 @Composable
@@ -106,10 +127,6 @@ private fun RaceTrackerScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = stringResource(R.string.run_a_race),
-            style = MaterialTheme.typography.headlineSmall,
-        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -121,10 +138,12 @@ private fun RaceTrackerScreen(
                 painter = painterResource(R.drawable.ic_walk),
                 contentDescription = null,
                 modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
+                tint = Color.DarkGray
             )
             StatusIndicator(
                 participantName = playerOne.name,
                 currentProgress = playerOne.currentProgress,
+                color = playerOne.color,
                 maxProgress = stringResource(
                     R.string.progress_percentage,
                     playerOne.maxProgress
@@ -135,6 +154,7 @@ private fun RaceTrackerScreen(
             Spacer(modifier = Modifier.size(dimensionResource(R.dimen.padding_large)))
             StatusIndicator(
                 participantName = playerTwo.name,
+                color = playerTwo.color,
                 currentProgress = playerTwo.currentProgress,
                 maxProgress = stringResource(
                     R.string.progress_percentage,
@@ -164,42 +184,54 @@ private fun StatusIndicator(
     currentProgress: Int,
     maxProgress: String,
     progressFactor: Float,
+    color : Color,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-    ) {
-        Text(
-            text = participantName,
-            modifier = Modifier.padding(end = dimensionResource(R.dimen.padding_small))
+    Column {
+        Icon(
+            painter = painterResource(R.drawable.ic_walk),
+            contentDescription = null,
+            modifier = Modifier
+                .size(100.dp)
+                .padding(dimensionResource(R.dimen.padding_medium)),
+            tint = color
         )
-        Column(
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
+        Row(
+            modifier = modifier
         ) {
-            LinearProgressIndicator(
-                progress = progressFactor,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(dimensionResource(R.dimen.progress_indicator_height))
-                    .clip(RoundedCornerShape(dimensionResource(R.dimen.progress_indicator_corner_radius)))
+            Text(
+                text = participantName,
+                modifier = Modifier.padding(end = dimensionResource(R.dimen.padding_small))
             )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_small))
             ) {
-                Text(
-                    text = stringResource(R.string.progress_percentage, currentProgress),
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.weight(1f)
+                LinearProgressIndicator(
+                    progress = progressFactor,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensionResource(R.dimen.progress_indicator_height))
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.progress_indicator_corner_radius)))
                 )
-                Text(
-                    text = maxProgress,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.progress_percentage, currentProgress),
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = maxProgress,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
+
 }
 
 @Composable
